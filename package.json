@@ -1,0 +1,22 @@
+{
+  "name": "note-taking-app",
+  "version": "1.0.0",
+  "description": "A full-stack Express and SQLite note-taking app with authentication.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node --no-warnings src/server.js",
+    "dev": "node --watch --no-warnings src/server.js",
+    "test": "node --test --no-warnings test/model.test.js"
+  },
+  "keywords": [
+    "express",
+    "sqlite",
+    "notes"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Note-Taking App</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="auth-panel" id="authPanel">
+        <div>
+          <p class="eyebrow">Personal Notes</p>
+          <h1>Keep class notes organized and private.</h1>
+          <p class="intro">Sign in or create an account to manage your own note collection.</p>
+        </div>
+
+        <form class="auth-card" id="authForm">
+          <div class="mode-switch" role="tablist" aria-label="Authentication mode">
+            <button type="button" class="mode-button active" id="loginMode">Log in</button>
+            <button type="button" class="mode-button" id="registerMode">Register</button>
+          </div>
+
+          <label>
+            Username
+            <input id="username" name="username" autocomplete="username" required minlength="3" maxlength="32" />
+          </label>
+
+          <label>
+            Password
+            <input id="password" name="password" type="password" autocomplete="current-password" required minlength="6" />
+          </label>
+
+          <button type="submit" class="primary-action" id="authSubmit">Log in</button>
+          <p class="message" id="authMessage" role="status"></p>
+        </form>
+      </section>
+
+      <section class="notes-panel hidden" id="notesPanel">
+        <header class="top-bar">
+          <div>
+            <p class="eyebrow">Workspace</p>
+            <h1 id="welcomeTitle">Your Notes</h1>
+          </div>
+          <button type="button" class="secondary-action" id="logoutButton">Log out</button>
+        </header>
+
+        <div class="notes-layout">
+          <form class="note-form" id="noteForm">
+            <input type="hidden" id="noteId" />
+            <label>
+              Title
+              <input id="noteTitle" maxlength="120" placeholder="Lecture summary" required />
+            </label>
+            <label>
+              Content
+              <textarea id="noteContent" maxlength="5000" placeholder="Write the important details here..." required></textarea>
+            </label>
+            <div class="form-actions">
+              <button type="submit" class="primary-action" id="saveNoteButton">Save note</button>
+              <button type="button" class="secondary-action" id="cancelEditButton">Cancel</button>
+            </div>
+            <p class="message" id="noteMessage" role="status"></p>
+          </form>
+
+          <div class="notes-list" id="notesList" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
