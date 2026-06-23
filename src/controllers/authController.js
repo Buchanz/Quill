@@ -1,57 +1,11 @@
 const { createSession, deleteExpiredSessions, deleteSession } = require('../models/sessionModel');
-const { createUser, findUserByUsername, publicUser, verifyPassword } = require('../models/userModel');
-const { validateCredentials } = require('../utils/validation');
-
-function sendAuthResponse(res, user) {
-  const session = createSession(user.id);
-  return res.status(200).json({
-    user: publicUser(user),
-    token: session.token,
-    expiresAt: session.expiresAt,
-  });
-}
-
-function register(req, res, next) {
-  try {
-    const { errors, username, password } = validateCredentials(req.body);
-    if (errors.length) return res.status(400).json({ error: errors.join(' ') });
-
-    const user = createUser({ username, password });
-    return sendAuthResponse(res, user);
-  } catch (err) {
-    return next(err);
-  }
-}
-
-function login(req, res, next) {
-  try {
-    deleteExpiredSessions();
-    const { errors, username, password } = validateCredentials(req.body);
-    if (errors.length) return res.status(400).json({ error: errors.join(' ') });
-
-    const user = findUserByUsername(username);
-    if (!user || !verifyPassword(password, user.password_hash)) {
-      return res.status(401).json({ error: 'Invalid username or password.' });
-    }
-
-    return sendAuthResponse(res, user);
-  } catch (err) {
-    return next(err);
-  }
-}
-
-function logout(req, res) {
-  deleteSession(req.authToken);
-  return res.status(204).send();
-}
-
-function me(req, res) {
-  return res.json({ user: req.user });
-}
-
-module.exports = {
-  login,
-  logout,
-  me,
-  register,
-};
+const { createUser, findUserByUsername, isProfileColorAvailable, publicUser, searchPublicUsers, updateProfile, verifyPassword } = require('../models/userModel');
+const { validateEmail, validateCredentials, validateRegistration } = require('../utils/validation');
+function sendAuthResponse(res, user) { const session = createSession(user.id); return res.status(200).json({ user: publicUser(user), token: session.token, expiresAt: session.expiresAt }); }
+function register(req, res, next) { try { const { errors, username, email, password } = validateRegistration(req.body); if (errors.length) return res.status(400).json({ error: errors.join(' ') }); return sendAuthResponse(res, createUser({ username, email, password })); } catch (err) { return next(err); } }
+function login(req, res, next) { try { deleteExpiredSessions(); const { errors, username, password } = validateCredentials(req.body); if (errors.length) return res.status(400).json({ error: errors.join(' ') }); const user = findUserByUsername(username); if (!user || !verifyPassword(password, user.password_hash)) return res.status(401).json({ error: 'Invalid username or password.' }); return sendAuthResponse(res, user); } catch (err) { return next(err); } }
+function logout(req, res) { deleteSession(req.authToken); return res.status(204).send(); }
+function me(req, res) { return res.json({ user: publicUser(req.user) }); }
+function profile(req, res, next) { try { const username = req.body.username === undefined ? req.user.username : String(req.body.username || '').trim(); const emailInput = req.body.email === undefined ? req.user.email : req.body.email; const { email, valid } = validateEmail(emailInput); const colors = ['#9b75e8', '#4f7ddf', '#2f9c95', '#65a95b', '#d5a72e', '#d97745', '#c95665']; const statuses = ['Away', 'Working', 'Busy']; const themes = ['light', 'dark']; const profileColor = req.body.profileColor === undefined ? (req.user.profile_color || colors[0]) : req.body.profileColor; const status = req.body.status === undefined ? (req.user.status || 'Away') : req.body.status; const theme = req.body.theme === undefined ? (req.user.theme || 'dark') : req.body.theme; if (username.length < 3 || username.length > 32) return res.status(400).json({ error: 'Username must be between 3 and 32 characters.' }); if (!valid) return res.status(400).json({ error: 'Enter a valid email address.' }); if (!colors.includes(profileColor)) return res.status(400).json({ error: 'Choose a valid profile colour.' }); if (!statuses.includes(status)) return res.status(400).json({ error: 'Choose a valid status.' }); if (!themes.includes(theme)) return res.status(400).json({ error: 'Choose a valid theme.' }); if (profileColor !== req.user.profile_color && !isProfileColorAvailable(req.user.id, profileColor)) return res.status(409).json({ error: 'That color is already used in one of your collaborations.' }); return res.json({ user: publicUser(updateProfile(req.user.id, { username, email, profileColor, status, theme })) }); } catch (err) { return next(err); } }
+function users(req, res) { const query = String(req.query.query || '').trim().slice(0, 32); return res.json({ users: searchPublicUsers(query, req.user.id) }); }
+module.exports = { login, logout, me, profile, register, users };

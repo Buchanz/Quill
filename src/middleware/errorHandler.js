@@ -1,19 +1,3 @@
-function notFound(req, res) {
-  res.status(404).json({ error: 'The requested endpoint was not found.' });
-}
-
-function errorHandler(err, req, res, next) {
-  if (res.headersSent) return next(err);
-
-  if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-    return res.status(409).json({ error: 'That username is already taken.' });
-  }
-
-  console.error(err);
-  return res.status(500).json({ error: 'Something went wrong on the server.' });
-}
-
-module.exports = {
-  errorHandler,
-  notFound,
-};
+function notFound(req, res) { res.status(404).json({ error: 'The requested endpoint was not found.' }); }
+function errorHandler(err, req, res, next) { if (res.headersSent) return next(err); if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON request body.' }); if (err.type === 'entity.too.large') return res.status(413).json({ error: 'Request body is too large.' }); if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') return res.status(409).json({ error: 'That username or email is already registered.' }); console.error(err); return res.status(500).json({ error: 'Something went wrong on the server.' }); }
+module.exports = { errorHandler, notFound };

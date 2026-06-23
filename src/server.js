@@ -1,41 +1,29 @@
-console.log('Starting server.js...');
 const express = require('express');
-console.log('Express loaded successfully');
 const path = require('node:path');
-console.log('Loading database...');
-require('./config/database');
-console.log('Database loaded successfully');
-
+const authController = require('./controllers/authController');
 const authRoutes = require('./routes/authRoutes');
 const noteRoutes = require('./routes/noteRoutes');
+const requireAuth = require('./middleware/auth');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '127.0.0.1';
+const publicDir = path.join(__dirname, '..', 'public');
+
 const app = express();
-const port = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.static(publicDir));
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', app: 'Note-Taking App' });
-});
-
+app.get('/health', (req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRoutes);
+app.get('/api/users', requireAuth, authController.users);
 app.use('/api/notes', noteRoutes);
+
 app.use('/api', notFound);
+app.get('*', (req, res) => res.sendFile(path.join(publicDir, 'index.html')));
 app.use(errorHandler);
 
-if (require.main === module) {
-  const server = app.listen(port, () => {
-    console.log('Server started successfully');
-    console.log(`Note-Taking App running at http://localhost:${port}`);
-    console.log(`Health check: http://localhost:${port}/api/health`);
-  });
-
-  server.on('error', (error) => {
-    console.error('Server failed to start:', error.message);
-    process.exit(1);
-  });
-}
-
-module.exports = app;
+app.listen(PORT, HOST, () => {
+  console.log('Quill is running at http://localhost:' + PORT);
+});

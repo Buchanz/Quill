@@ -1,56 +1,10 @@
 const noteModel = require('../models/noteModel');
 const { parseId, validateNote } = require('../utils/validation');
-
-function listNotes(req, res) {
-  return res.json({ notes: noteModel.getNotesByUser(req.user.id) });
-}
-
-function getNote(req, res) {
-  const noteId = parseId(req.params.id);
-  if (!noteId) return res.status(400).json({ error: 'Note id must be a positive number.' });
-
-  const note = noteModel.getNoteById(req.user.id, noteId);
-  if (!note) return res.status(404).json({ error: 'Note not found.' });
-
-  return res.json({ note });
-}
-
-function createNote(req, res) {
-  const { errors, title, content } = validateNote(req.body);
-  if (errors.length) return res.status(400).json({ error: errors.join(' ') });
-
-  const note = noteModel.createNote(req.user.id, { title, content });
-  return res.status(201).json({ note });
-}
-
-function updateNote(req, res) {
-  const noteId = parseId(req.params.id);
-  if (!noteId) return res.status(400).json({ error: 'Note id must be a positive number.' });
-
-  const { errors, title, content } = validateNote(req.body);
-  if (errors.length) return res.status(400).json({ error: errors.join(' ') });
-
-  const note = noteModel.updateNote(req.user.id, noteId, { title, content });
-  if (!note) return res.status(404).json({ error: 'Note not found.' });
-
-  return res.json({ note });
-}
-
-function deleteNote(req, res) {
-  const noteId = parseId(req.params.id);
-  if (!noteId) return res.status(400).json({ error: 'Note id must be a positive number.' });
-
-  if (!noteModel.deleteNote(req.user.id, noteId)) {
-    return res.status(404).json({ error: 'Note not found.' });
-  }
-
-  return res.status(204).send();
-}
-
-module.exports = {
-  createNote,
-  deleteNote,
-  getNote,
-  listNotes,
-  updateNote,
-};
+function listNotes(req, res) { return res.json({ notes: noteModel.getNotesByUser(req.user.id) }); }
+function getNote(req, res) { const noteId = parseId(req.params.id); if (!noteId) return res.status(400).json({ error: 'Note id must be a positive number.' }); const note = noteModel.getNoteById(req.user.id, noteId); if (!note) return res.status(404).json({ error: 'Note not found.' }); return res.json({ note }); }
+function createNote(req, res) { const { errors, title, content } = validateNote(req.body); if (errors.length) return res.status(400).json({ error: errors.join(' ') }); return res.status(201).json({ note: noteModel.createNote(req.user.id, { title, content }) }); }
+function updateNote(req, res) { const noteId = parseId(req.params.id); if (!noteId) return res.status(400).json({ error: 'Note id must be a positive number.' }); const { errors, title, content } = validateNote(req.body); if (errors.length) return res.status(400).json({ error: errors.join(' ') }); const note = noteModel.updateNote(req.user.id, noteId, { title, content }); if (!note) return res.status(404).json({ error: 'Note not found.' }); return res.json({ note }); }
+function deleteNote(req, res) { const noteId = parseId(req.params.id); if (!noteId) return res.status(400).json({ error: 'Note id must be a positive number.' }); if (!noteModel.deleteNote(req.user.id, noteId)) return res.status(404).json({ error: 'Note not found.' }); return res.status(204).send(); }
+function listCollaborators(req, res) { const noteId = parseId(req.params.id); if (!noteId) return res.status(400).json({ error: 'Note id must be a positive number.' }); const collaborators = noteModel.getCollaborators(req.user.id, noteId); if (!collaborators) return res.status(403).json({ error: 'You do not have access to this item.' }); return res.json({ collaborators }); }
+function shareNote(req, res) { const noteId = parseId(req.params.id); if (!noteId) return res.status(400).json({ error: 'Note id must be a positive number.' }); const username = String(req.body.username || '').trim(); if (username.length < 3 || username.length > 32) return res.status(400).json({ error: 'Enter a valid username.' }); const result = noteModel.shareNote(req.user.id, noteId, username); if (result.error) return res.status(result.status).json({ error: result.error }); return res.status(201).json(result); }
+module.exports = { createNote, deleteNote, getNote, listCollaborators, listNotes, shareNote, updateNote };

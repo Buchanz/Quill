@@ -3,68 +3,202 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Note-Taking App</title>
+    <title>Quill Notes</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.88em' x='.5em' text-anchor='middle' font-size='82'%3E%F0%9F%AA%B6%3C/text%3E%3C/svg%3E" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <main class="app-shell">
       <section class="auth-panel" id="authPanel">
-        <div>
-          <p class="eyebrow">Personal Notes</p>
-          <h1>Keep class notes organized and private.</h1>
-          <p class="intro">Sign in or create an account to manage your own note collection.</p>
+        <div class="auth-brand">
+          <img class="auth-logo" src="/assets/quill-logo.svg" alt="Quill logo" />
+          <div>
+            <h1>Quill</h1>
+          </div>
         </div>
-
         <form class="auth-card" id="authForm">
-          <div class="mode-switch" role="tablist" aria-label="Authentication mode">
+          <div class="mode-switch">
             <button type="button" class="mode-button active" id="loginMode">Log in</button>
             <button type="button" class="mode-button" id="registerMode">Register</button>
           </div>
-
-          <label>
-            Username
-            <input id="username" name="username" autocomplete="username" required minlength="3" maxlength="32" />
-          </label>
-
-          <label>
-            Password
-            <input id="password" name="password" type="password" autocomplete="current-password" required minlength="6" />
-          </label>
-
+          <label>Username <input id="username" name="username" autocomplete="username" required minlength="3" maxlength="32" /></label>
+          <label class="register-only">Email <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" /></label>
+          <label>Password <input id="password" name="password" type="password" autocomplete="current-password" required minlength="6" maxlength="32" /></label>
+          <label class="register-only">Confirm password <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="6" maxlength="32" /></label>
           <button type="submit" class="primary-action" id="authSubmit">Log in</button>
           <p class="message" id="authMessage" role="status"></p>
         </form>
       </section>
 
-      <section class="notes-panel hidden" id="notesPanel">
-        <header class="top-bar">
-          <div>
-            <p class="eyebrow">Workspace</p>
-            <h1 id="welcomeTitle">Your Notes</h1>
-          </div>
-          <button type="button" class="secondary-action" id="logoutButton">Log out</button>
-        </header>
-
-        <div class="notes-layout">
-          <form class="note-form" id="noteForm">
-            <input type="hidden" id="noteId" />
-            <label>
-              Title
-              <input id="noteTitle" maxlength="120" placeholder="Lecture summary" required />
-            </label>
-            <label>
-              Content
-              <textarea id="noteContent" maxlength="5000" placeholder="Write the important details here..." required></textarea>
-            </label>
-            <div class="form-actions">
-              <button type="submit" class="primary-action" id="saveNoteButton">Save note</button>
-              <button type="button" class="secondary-action" id="cancelEditButton">Cancel</button>
+      <section class="workspace hidden" id="notesPanel">
+        <aside class="workspace-sidebar">
+          <div class="sidebar-brand">
+            <button type="button" class="profile-avatar" id="profileAvatar" aria-label="Open settings">Q</button>
+            <div class="sidebar-identity">
+              <strong id="userDisplayName">Quill</strong>
+              <div class="profile-status">
+                <button type="button" class="profile-status-button" id="profileStatusButton" aria-label="Change status" aria-expanded="false"><span class="status-dot" id="profileStatusDot"></span><span id="profileStatusText">Away</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9l5 5 5-5"/></svg></button>
+                <div class="profile-status-menu hidden" id="profileStatusMenu">
+                  <button type="button" data-profile-status="Working"><span class="status-dot is-working"></span>Working</button>
+                  <button type="button" data-profile-status="Away"><span class="status-dot is-away"></span>Away</button>
+                  <button type="button" data-profile-status="Busy"><span class="status-dot is-busy"></span>Busy</button>
+                </div>
+              </div>
             </div>
-            <p class="message" id="noteMessage" role="status"></p>
-          </form>
-
+          </div>
+          <nav class="workspace-nav" aria-label="Note sections">
+            <button type="button" class="nav-item active" data-view="all"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7" /><path d="M6.5 10v9h11v-9" /><path d="M10 19v-5h4v5" /></svg></span><span class="nav-label">Home</span></button>
+          </nav>
+          <div class="sidebar-notes-tools">
+            <p class="sidebar-section-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V7h7v13M11 20V4h9v16M7 10h1M7 13h1M7 16h1M15 8h1M15 11h1M15 14h1M15 17h1M2 20h20"/></svg><span>Workspace</span></p>
+          </div>
           <div class="notes-list" id="notesList" aria-live="polite"></div>
-        </div>
+          <div class="sidebar-footer">
+            <button type="button" class="logout-button" id="logoutButton"><span>Sign out</span><span class="logout-symbol">↪</span></button>
+          </div>
+        </aside>
+
+        <section class="editor-panel">
+          <div class="editor-top-actions hidden" id="editorTopActions">
+            <button type="button" class="editor-menu-button" id="editorMenuButton" aria-label="More actions"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>
+            <div class="editor-menu hidden" id="editorMenu">
+              <div class="editor-color-options" aria-label="Item color"></div>
+              <button type="button" data-editor-action="delete">Delete</button>
+              <button type="button" data-editor-action="copy">Copy text</button>
+              <button type="button" data-editor-action="email">Send via email</button>
+            </div>
+          </div>
+          <article class="home-panel" id="homePanel">
+            <header class="home-header">
+              <h2>Coming up</h2>
+            </header>
+            <section class="coming-card">
+              <div class="coming-date">
+                <strong id="homeDateNumber">18</strong>
+                <span id="homeDateMonth">June</span>
+                <small id="homeDateWeekday">Thu</small>
+                <div class="home-weather" id="homeWeather">Enable location in Settings for weather</div>
+              </div>
+              <div class="month-calendar" id="homeCalendar" aria-label="Current month calendar"></div>
+            </section>
+            <h3 class="dashboard-heading">Quick access</h3>
+            <div class="dashboard-grid" id="homeRecentItems"></div>
+            <label class="home-search" aria-label="Search workspace"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg><input id="homeSearch" type="search" placeholder="Search Workspace" /></label>
+            <div class="home-search-results" id="homeSearchResults"></div>
+          </article>
+          <div class="empty-editor hidden" id="emptyEditor"><h2>Take your first note</h2><p>Your notes will appear here.</p></div>
+          <article class="main-list-panel hidden" id="mainListPanel">
+            <p class="eyebrow" id="mainListEyebrow">Workspace</p>
+            <h2 id="mainListTitle">Notes</h2>
+            <div class="main-list-items" id="mainListItems"></div>
+            <label class="main-search" aria-label="Search workspace"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg><input id="mainListSearch" type="search" placeholder="Search Workspace" /></label>
+          </article>
+          <article class="settings-panel hidden" id="settingsPanel">
+            <p class="eyebrow">Settings</p>
+            <h2>Preferences</h2>
+            <div class="settings-list">
+              <section class="settings-section settings-account-section">
+                <h3>Account</h3>
+                <div class="account-subsections">
+                  <button type="button" data-open-setting="username"><span>Username</span><span class="account-more" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></span></button>
+                  <button type="button" data-open-setting="email"><span>Email</span><span class="account-more" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></span></button>
+                  <button type="button" data-open-setting="password"><span>Password</span><span class="account-more" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></span></button>
+                </div>
+              </section>
+              <section class="settings-section settings-appearance-section">
+                <h3>Appearance</h3>
+                <div class="appearance-subsections">
+                  <div class="appearance-row"><span>Theme</span><div class="theme-toggle" aria-label="Appearance">
+                    <button type="button" data-theme-option="light" aria-label="Light theme" title="Light"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+                    <button type="button" data-theme-option="dark" aria-label="Dark theme" title="Dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4 8.5 8.5 0 1 0 20 15.2z"/></svg></button>
+                  </div></div>
+                  <div class="appearance-row profile-color-control"><span>Colour</span><button type="button" class="profile-color-button" id="profileColorButton" aria-label="Change profile icon colour" aria-expanded="false"><span id="profileColorPreview"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9l5 5 5-5"/></svg></button><div class="profile-color-menu hidden" id="profileColorMenu"></div></div>
+                </div>
+              </section>
+              <section class="settings-section settings-permissions-section">
+                <h3>Permissions</h3>
+                <div class="permission-subsections">
+                  <span>Location access</span>
+                  <label class="permission-toggle" aria-label="Location access"><input id="weatherLocationToggle" type="checkbox" role="switch" /><span class="toggle-track" aria-hidden="true"></span></label>
+                </div>
+              </section>
+              <section class="settings-section">
+                <div><h3>Archived items</h3></div>
+                <button type="button" class="secondary-action settings-icon-button" id="openArchiveButton" aria-label="View archive" title="View archive"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/><path d="M12 7v5l3 2"/></svg></button>
+              </section>
+              <section class="settings-section danger-zone">
+                <div><h3>Delete account</h3></div>
+                <button type="button" class="danger-action settings-icon-button delete-account-button" id="deleteAccountButton" aria-label="Delete account" title="Delete account"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 10v6M14 10v6"/></svg></button>
+              </section>
+            </div>
+            <p class="settings-message" id="settingsMessage" role="status"></p>
+          </article>
+
+          <dialog class="settings-dialog" id="accountSettingsDialog">
+            <form method="dialog" class="dialog-shell">
+              <header><div><p class="eyebrow">Account</p><h2 id="accountDialogTitle">Change username</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">×</button></header>
+              <label class="setting-row" data-setting-field="username">Username<input id="settingsUsername" maxlength="32" placeholder="Username" /></label>
+              <label class="setting-row hidden" data-setting-field="email">Email<input id="settingsEmail" type="email" placeholder="you@example.com" /></label>
+              <label class="setting-row hidden" data-setting-field="password">New password<input id="settingsPassword" type="password" minlength="6" maxlength="32" placeholder="New password" /></label>
+              <div class="dialog-actions">
+                <button type="button" class="secondary-action" id="saveUsernameButton">Save change</button>
+                <button type="button" class="secondary-action hidden" id="savePasswordButton">Change password</button>
+              </div>
+            </form>
+          </dialog>
+
+          <dialog class="settings-dialog archive-dialog" id="archiveDialog">
+            <div class="dialog-shell">
+              <header><div><p class="eyebrow">30-day archive</p><h2>Archived items</h2></div><button type="button" class="dialog-close" id="closeArchiveButton" aria-label="Close">×</button></header>
+              <div class="archive-list" id="archiveList"></div>
+            </div>
+          </dialog>
+          <dialog class="settings-dialog" id="collaborationDialog">
+            <form class="dialog-shell collaboration-dialog-shell" id="collaborationInviteForm" autocomplete="off">
+              <header><div><p class="eyebrow">Collaborations</p><h2>Share an item</h2></div><button type="button" class="dialog-close" id="closeCollaborationDialog" aria-label="Close">×</button></header>
+              <label>Selection<select id="collaborationItemSelect" required></select></label>
+              <label>Username<input id="collaborationUsername" type="search" placeholder="Public username" minlength="3" maxlength="32" autocomplete="off" required /></label>
+              <p class="share-message" id="collaborationMessage" role="status"></p>
+              <div class="dialog-actions collaboration-dialog-actions"><button type="submit" class="secondary-action">Invite collaborator</button></div>
+            </form>
+          </dialog>
+          <dialog class="settings-dialog reminder-dialog" id="reminderDialog">
+            <form class="dialog-shell" id="reminderForm">
+              <header><div><p class="eyebrow">Schedule</p><h2>Add a Reminder</h2></div><button type="button" class="dialog-close" aria-label="Close">×</button></header>
+              <div class="reminder-fields">
+                <label>Date and time<input id="reminderDateTime" type="datetime-local" required /></label>
+                <label>Frequency<select id="reminderRepeat"><option value="none">Once</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label>
+                <label>Notify me<select id="reminderLead"><option value="0">At the scheduled time</option><option value="1440">1 day before</option><option value="7200">5 days before</option><option value="10080">1 week before</option></select></label>
+              </div>
+              <p class="reminder-help">Computer notifications work while Quill is open. Scheduled email reminders require a connected email delivery service.</p>
+              <div class="dialog-actions reminder-actions"><button type="button" class="reminder-remove hidden" id="removeReminderButton">Remove</button><button type="submit" class="secondary-action">Save reminder</button></div>
+            </form>
+          </dialog>
+          <article class="note-editor hidden" id="noteEditor">
+            <header class="editor-header">
+              <div class="collaborator-avatars hidden" id="collaboratorAvatars" aria-label="Collaborators"></div>
+              <div class="editor-title-row"><span class="editor-title-bullet" id="editorTitleBullet" aria-hidden="true"></span><input id="noteTitle" class="title-input" maxlength="80" placeholder="Untitled note" /></div>
+              <input id="noteCategory" type="hidden" value="quick" />
+              <div class="editor-tags" aria-label="Note details">
+                <button type="button" class="editor-tag" id="reminderTag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v4" /><path d="M17 3v4" /><path d="M4 9h16" /><rect x="4" y="5" width="16" height="15" rx="3" /></svg><span id="reminderTagText">Today</span></button>
+                <button type="button" class="editor-tag" id="shareTag"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path d="M3.5 19c.4-4 2.2-6 5.5-6s5.1 2 5.5 6" /><path d="M14 14c3.5-.7 5.8 1 6.3 4" /></svg><span id="shareTagText">Share</span></button>
+                <button type="button" class="editor-tag icon-only" id="projectTag" aria-label="Add to project"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5h6l1.8 2H20.5v9H3.5z" /><path d="M18 12v5" /><path d="M15.5 14.5h5" /></svg></button>
+                <div class="project-menu hidden" id="projectMenu"></div>
+                <div class="share-menu hidden" id="shareMenu">
+                  <form id="shareForm" autocomplete="off" data-form-type="other">
+                    <input id="shareUsername" name="collaborator-search" type="search" placeholder="Search public usernames" minlength="2" maxlength="32" autocomplete="off" autocapitalize="none" spellcheck="false" data-1p-ignore data-lpignore="true" data-form-type="other" required />
+                    <button type="submit" class="share-add-button" aria-label="Add collaborator" title="Add collaborator"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+                  </form>
+                  <div class="share-suggestions hidden" id="shareSuggestions"></div>
+                  <p class="share-message" id="shareMessage" role="status"></p>
+                  <div class="share-people" id="sharePeople"></div>
+                </div>
+              </div>
+            </header>
+            <textarea id="noteContent" class="content-input" placeholder="Start typing..."></textarea>
+            <div class="editor-status hidden"><span id="saveStatus">Saved</span><span id="noteMeta">No note selected</span></div>
+          </article>
+        </section>
       </section>
     </main>
 
