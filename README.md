@@ -1,4 +1,4 @@
-# Quill Note-Taking App
+# Quill
 
 Quill is a full-stack note-taking workspace built for class notes, projects, chats, and quick writing. Users can register, log in, create and edit their own notes, organize items by type, share notes with other registered users, customize their theme, and view a polished responsive dashboard.
 

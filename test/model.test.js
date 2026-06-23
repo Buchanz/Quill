@@ -10,7 +10,7 @@ const { createUser, findUserByUsername, isProfileColorAvailable, searchPublicUse
 const { createSession, findSessionWithUser } = require('../src/models/sessionModel');
 const { validateCredentials, validateNote, validateRegistration } = require('../src/utils/validation');
 let user;
-describe('Note-Taking App data layer', () => {
+describe('Quill data layer', () => {
   it('validates credentials and note input', () => {
     assert.equal(validateCredentials({ username: 'ab', password: '123' }).errors.length, 2);
     assert.equal(validateCredentials({ username: 'Student_1', password: 'secret123' }).errors.length, 0);

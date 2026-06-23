@@ -1,7 +1,7 @@
 {
-  "name": "note-taking-app",
+  "name": "quill",
   "version": "1.0.0",
-  "description": "A full-stack Express and SQLite note-taking app with authentication.",
+  "description": "A full-stack Express and SQLite workspace for notes, projects, chats, and collaboration.",
   "main": "src/server.js",
   "scripts": {
     "start": "node --no-warnings src/server.js",
